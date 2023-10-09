@@ -43,7 +43,7 @@ runs:
       if: ${{steps.branch-exists.outputs.branch_exists == '1'}}
       uses: peterjgrainger/action-create-branch@v2.2.0
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       with:
         branch: 'refs/heads/${{ env.branch_name }}'
         sha: '${{ env.refreshed_base_sha }}'
@@ -55,4 +55,4 @@ runs:
         type: now
         from_branch: ${{ inputs.head_ref }}
         target_branch: ${{ env.branch_name }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ inputs.github_token }}
