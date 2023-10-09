@@ -1,5 +1,4 @@
 name: 'refreshed_branch'
-id: 'refreshed_branch'
 description: 'provide a intermediate refreshed branch used for automated tests'
 inputs:
   base_ref:
@@ -59,8 +58,8 @@ runs:
         target_branch: ${{ env.branch_name }}
         github_token: ${{ inputs.github_token }}
 
+    # Faz checkout na branch base para se reconectar ao workflow em post-checkout
     - name: Back to base branch for post checkout
       uses: actions/checkout@v3
-      id: refreshed-sha
       with:
         ref: ${{ inputs.base_ref }}
