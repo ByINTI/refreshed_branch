@@ -1,0 +1,58 @@
+name: 'refreshed_branch'
+id: 'refreshed_branch'
+description: 'provide a intermediate refreshed branch used for automated tests'
+inputs:
+  base_ref:
+    description: 'can get with github.event.pull_request.base.ref'
+    required: true
+  head_ref:
+    description: 'can get with github.event.pull_request.head.ref'
+    required: true
+  github_token:
+    description: 'can get with secrets.GITHUB_TOKEN'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    # Define o nome da branch intermediária que será criada e usada pelos testes
+    - run: echo "branch_name=tests/${{ inputs.head_ref }}_${{ inputs.base_ref }}" >> $GITHUB_ENV
+      name: Set branch name used for tests
+      shell: bash
+
+    # Faz checkout na branch base (feature, task, dev, homolog, master) e pega o sha dela
+    - name: Get head sha of base branch
+      uses: actions/checkout@v3
+      id: refreshed-sha
+      with:
+        ref: ${{ inputs.base_ref }}
+    - run: |
+        echo "refreshed_base_sha=$(cat .git/refs/heads/${{ inputs.base_ref }})" >> $GITHUB_ENV
+
+    # Verifica se a branch existe
+    - run: |
+        set +e
+        git checkout ${{ env.branch_name }}
+        echo "branch_exists=$?" >> $GITHUB_OUTPUT
+      continue-on-error: true
+      name: Check if branch used for tests already exists
+      id: branch-exists
+      shell: bash
+
+    # Cria a branch usada para rodar os testes (nome da branch de trabalho + '_' + nome branch base)
+    - name: Create refreshed branch
+      if: ${{steps.branch-exists.outputs.branch_exists == '1'}}
+      uses: peterjgrainger/action-create-branch@v2.2.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        branch: 'refs/heads/${{ env.branch_name }}'
+        sha: '${{ env.refreshed_base_sha }}'
+
+    # Faz o merge da head da branch base em cima da nova branch criada no passo anterior a este
+    - name: Merge branch -> ${{ inputs.head_ref }} into ${{ env.branch_name }}
+      uses: devmasx/merge-branch@master
+      with:
+        type: now
+        from_branch: ${{ inputs.head_ref }}
+        target_branch: ${{ env.branch_name }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
