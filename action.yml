@@ -18,13 +18,6 @@ runs:
       name: Set branch name used for tests
       shell: bash
 
-    # Faz checkout na branch base (feature, task, dev, homolog, master) e pega o sha dela
-    - name: Get head sha of base branch
-      uses: actions/checkout@v3
-      id: refreshed-sha
-      with:
-        ref: ${{ inputs.base_ref }}
-
     - run: |
         echo "refreshed_base_sha=$(cat .git/refs/heads/${{ inputs.base_ref }})" >> $GITHUB_ENV
       shell: bash
@@ -57,9 +50,3 @@ runs:
         from_branch: ${{ inputs.head_ref }}
         target_branch: ${{ env.branch_name }}
         github_token: ${{ inputs.github_token }}
-
-    # Faz checkout na branch base para se reconectar ao workflow em post-checkout
-    - name: Back to base branch for post checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ inputs.base_ref }}
