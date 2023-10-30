@@ -44,9 +44,15 @@ runs:
 
     # Faz o merge da head da branch base em cima da nova branch criada no passo anterior a este
     - name: Merge branch -> ${{ inputs.head_ref }} into ${{ env.branch_name }}
-      uses: devmasx/merge-branch@master
+      uses: everlytic/branch-merge@1.1.2
       with:
-        type: now
-        from_branch: ${{ inputs.head_ref }}
-        target_branch: ${{ env.branch_name }}
         github_token: ${{ inputs.github_token }}
+        source_ref: ${{ inputs.head_ref }}
+        target_branch: ${{ env.branch_name }}
+        commit_message_template: '[Automated] Merged ${{ inputs.github_token }} into target ${{ env.branch_name }}'
+#      uses: devmasx/merge-branch@master
+#      with:
+#        type: now
+#        from_branch: ${{ inputs.head_ref }}
+#        target_branch: ${{ env.branch_name }}
+#        github_token: ${{ inputs.github_token }}
